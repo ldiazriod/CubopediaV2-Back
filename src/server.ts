@@ -55,7 +55,8 @@ serverStart();
 app.use(express.json())
 app.use(cors())
 
-app.listen({port: 8000}, () => {
-    console.log("Application runing on http://localhost:8000")
+const port = process.env.PORT!==undefined ? Number.parseInt(process.env.PORT) : 4000
+app.listen({port: port}, () => {
+    console.log("Application runing on http://localhost:4000")
 })
 
