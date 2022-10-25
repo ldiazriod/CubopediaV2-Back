@@ -1,7 +1,7 @@
 import {ApolloError} from "apollo-server-express";
 import { Request, Response } from "express";
 import {Db, Collection, WithId, ObjectId} from "mongodb";
-import uuid from "uuid"
+import { v4 as uuidv4 } from 'uuid';
  
 import {User, Cube} from "../../mongodb/mongoTypes"
 import {app} from "../../server"
@@ -13,7 +13,7 @@ const Mutation = {
             const userCollection: Collection<User> = db.collection<User>("Users")
             const user: WithId<User> | null = await userCollection.findOne({$or: [{"username": args.username, "password": args.password}, {"email": args.email, "password": args.password}]})
             if(user){
-                const token = uuid.v4();
+                const token = uuidv4();
                 await db.collection<User>("Users").findOneAndUpdate(user, {$set: {authToken: token}});
                 return {
                     creator: String(user._id),
@@ -31,7 +31,7 @@ const Mutation = {
             const userCollection: Collection<User> = db.collection<User>("Users")
             const user: WithId<User> | null = await userCollection.findOne({$or: [{"username": args.username, "password": args.password}, {"email": args.email, "password": args.password}]})
             if(!user){
-                const token = uuid.v4()
+                const token = uuidv4()
                 await userCollection.insertOne({
                     username: args.username, 
                     email: args.email, 
