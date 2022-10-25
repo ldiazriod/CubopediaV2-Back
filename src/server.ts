@@ -37,6 +37,8 @@ const server: ApolloServer<ExpressContext> = new ApolloServer({
         }
     },
     introspection: true,
+    cache: "bounded",
+    persistedQueries: false,
 });
 
 const serverStart = async() => {
