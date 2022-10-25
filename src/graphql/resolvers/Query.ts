@@ -1,8 +1,6 @@
 import {ApolloError} from "apollo-server-express";
 import { Request, Response } from "express";
-import {Db, Collection, WithId, ObjectId} from "mongodb";
-import * as uuid from "uuid";
- 
+import {Db, Collection, WithId, ObjectId} from "mongodb"; 
 import {Cube, User} from "../../mongodb/mongoTypes"
 import {app} from "../../server"
 const Query = {
