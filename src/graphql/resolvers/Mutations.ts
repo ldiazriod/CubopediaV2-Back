@@ -1,7 +1,7 @@
 import {ApolloError} from "apollo-server-express";
 import { Request, Response } from "express";
 import {Db, Collection, WithId, ObjectId} from "mongodb";
-import * as uuid from "uuid";
+import uuid from "uuid"
  
 import {User, Cube} from "../../mongodb/mongoTypes"
 import {app} from "../../server"
