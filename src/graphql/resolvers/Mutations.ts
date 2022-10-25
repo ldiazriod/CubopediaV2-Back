@@ -6,8 +6,6 @@ import {app} from "../../server"
 // @ts-ignore
 import { v4 as uuidv4 } from 'uuid';
  
-
-
 const Mutation = {
     logIn: async(parents: any, args: {username: string, email: string | undefined, password: string}, ctx: {req: Request, res: Response}): Promise<{creator: string, authToken: string} | undefined> => {
         try{

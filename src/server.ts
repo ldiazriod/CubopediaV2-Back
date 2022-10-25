@@ -35,7 +35,8 @@ const server: ApolloServer<ExpressContext> = new ApolloServer({
         return {
             ctx,
         }
-    }
+    },
+    introspection: true,
 });
 
 const serverStart = async() => {
