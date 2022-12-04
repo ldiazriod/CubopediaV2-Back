@@ -36,11 +36,36 @@ const Query = {
             throw new ApolloError(`${e}`);
         }
     },
-    getUser: async(parents: any, args: {authToken: string}, ctx: {req: Request, res: Response}): Promise<WithId<User> | null>=> {
+    getUser: async(parents: any, args: {authToken: string}, ctx: {req: Request, res: Response}): Promise<WithId<User> | null> => {
         try{
             const db: Db = app.get("db")
             const user: WithId<User> | null = await db.collection<User>("Users").findOne({authToken: args.authToken})
             return user;
+        }catch(e){
+            throw new ApolloError(`${e}`);
+        }
+    },
+    getPublicCubes: async(parents: any, args: {page: number, search: {cardMainTitle: string | undefined, cubeDimensions: string | undefined, cubeName: string | undefined, cardReviewPoints: number | undefined} | undefined}, ctx: {req: Request, res: Response}): Promise<WithId<Cube>[] | null> => {
+        try{
+            const db: Db = app.get("db")
+            const cubeCollection: Collection<Cube> = db.collection<Cube>("Cubes");
+            if(args.search){
+                const toFilter = Object.create(args.search)
+                if(args.search.cardMainTitle){
+                    toFilter.cardMainTitle = args.search.cardMainTitle
+                }
+                if(args.search.cubeDimensions){
+                    toFilter.cubeDimensions = args.search.cubeDimensions
+                }
+                if(args.search. cubeName){
+                    toFilter.cubeName = args.search.cubeName
+                }
+                if(args.search.cardReviewPoints){
+                    toFilter.cardReviewPoints = args.search.cardReviewPoints
+                }
+                return cubeCollection.find({...toFilter, public: true}).skip((args.page-1)*20).limit(20).toArray(); 
+            }
+            return await cubeCollection.find({public: true}).skip((args.page-1)*20).limit(20).toArray(); 
         }catch(e){
             throw new ApolloError(`${e}`);
         }

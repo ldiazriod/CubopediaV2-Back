@@ -48,17 +48,26 @@ const Schema = gql`
         cardImg: String!
         public: Boolean!
     }
+
+    input PublicSearch {
+        cardMainTitle: String
+        cubeDimensions: String
+        cubeName: String
+        cardReviewPoints: Int
+    }
     type Query{
         getAllCubeCards: [Cube!]!
         getCubesByUser(authToken: String!): [Cube!]!
         getCubeById(cubeId: ID!): Cube!
         getUser(authToken: String!): User
+        getPublicCubes(page: Int!, search: PublicSearch): [Cube!]!
     }
 
     type Mutation{
         logIn(username: String, email: String, password: String!): LogInReturn
         signUp(username: String!, email: String!, password: String!): String
         addCubeCard(info: CubeInput!): Boolean!
+        logOut(authToken: String!): Boolean!
     }
 `
 export default Schema;
