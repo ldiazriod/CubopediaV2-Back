@@ -52,7 +52,7 @@ const Query = {
             if(args.search){
                 const toFilter = Object.create(args.search)
                 if(args.search.cardMainTitle){
-                    toFilter.cardMainTitle = args.search.cardMainTitle
+                    toFilter.cardMainTitle = {$regex: args.search.cardMainTitle}
                 }
                 if(args.search.cubeDimensions){
                     toFilter.cubeDimensions = args.search.cubeDimensions
@@ -69,7 +69,16 @@ const Query = {
         }catch(e){
             throw new ApolloError(`${e}`);
         }
-    }
+    },
+    getCreator: async(parents: any, args: {id: ObjectId}, ctx: {req: Request, res: Response}): Promise<string> => {
+        try{
+            const db: Db = app.get("db")
+            const user: WithId<User> | null = await db.collection<User>("Users").findOne({_id: new ObjectId(args.id)})
+            return user ? user.username : "";
+        }catch(e){
+            throw new ApolloError(`${e}`);
+        }
+    },
 }
 
 export default Query;

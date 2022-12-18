@@ -81,6 +81,16 @@ const Mutation = {
             throw new ApolloError(`${e}`);
         }
     },
+    makePublic: async(parent: any, args: {id: ObjectId}, ctx:{req: Request, res: Response}): Promise<boolean> => {
+        try{
+            const db: Db = app.get("db")
+            const cubeCollection: Collection<Cube> = db.collection<Cube>("Cubes")
+            await cubeCollection.findOneAndUpdate({_id: new ObjectId(args.id)}, {$set:{public: true}})
+            return true
+        }catch(e){
+            throw new ApolloError(`${e}`);
+        }
+    }
 }
 
 export default Mutation;

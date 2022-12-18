@@ -35,6 +35,7 @@ const Schema = gql`
     }
 
     input CubeInput{
+        _id: ID
         creator: ID!
         cubeName: String!
         cubeDimensions: String!
@@ -61,6 +62,7 @@ const Schema = gql`
         getCubeById(cubeId: ID!): Cube!
         getUser(authToken: String!): User
         getPublicCubes(page: Int!, search: PublicSearch): [Cube!]!
+        getCreator(id: ID!): String
     }
 
     type Mutation{
@@ -68,6 +70,7 @@ const Schema = gql`
         signUp(username: String!, email: String!, password: String!): String
         addCubeCard(info: CubeInput!): Boolean!
         logOut(authToken: String!): Boolean!
+        makePublic(id: ID!): Boolean!
     }
 `
 export default Schema;
