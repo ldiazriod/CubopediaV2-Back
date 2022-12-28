@@ -1,11 +1,12 @@
 import {ApolloError} from "apollo-server-express";
 import { Request, Response } from "express";
 import {Db, Collection, WithId, ObjectId} from "mongodb";
-import {User, Cube} from "../../mongodb/mongoTypes"
+import {User, Cube, InputCube, PublicCube} from "../../mongodb/mongoTypes"
 import {app} from "../../server"
 // @ts-ignore
 import { v4 as uuidv4 } from 'uuid';
- 
+import axios from "axios";
+
 const Mutation = {
     logIn: async(parents: any, args: {username: string, email: string | undefined, password: string}, ctx: {req: Request, res: Response}): Promise<{creator: string, authToken: string} | undefined> => {
         try{
@@ -52,17 +53,24 @@ const Mutation = {
             throw new ApolloError(`${e}`);
         }
     },
-    addCubeCard: async(parent: any, args: {info: Cube}, ctx:{req: Request, res: Response}): Promise<boolean> => {
+    addCubeCard: async(parent: any, args: {info: InputCube}, ctx:{req: Request, res: Response}): Promise<boolean> => {
         try{
             const db: Db = app.get("db")
             const cubeCollection: Collection<Cube> = db.collection<Cube>("Cubes")
             const userCollection: Collection<User> = db.collection<User>("Users")
-            const findCard: WithId<Cube> | null = await cubeCollection.findOne({creator: args.info.creator, cardMainTitle: args.info.cardMainTitle, cubeName: args.info.cubeName})
+            const findCard: WithId<Cube> | null = await cubeCollection.findOne({creator: {creatorId: args.info.creator}, cardMainTitle: args.info.cardMainTitle, cubeName: args.info.cubeName})
             if(!findCard){
-                await cubeCollection.insertOne(args.info);
                 const user = await userCollection.findOne({_id: new ObjectId(args.info.creator)})
                 if(user){
-                    await userCollection.updateOne(user, {$set: {cubes: [...user?.cubes, args.info]}})
+                    const newCubeInfo = {
+                        ...args.info,
+                        creator: {
+                            creatorId: args.info.creator,
+                            username: user.username
+                        }
+                    }
+                    const {insertedId} = await cubeCollection.insertOne(newCubeInfo);
+                    await userCollection.updateOne(user, {$set: {cubes: [...user.cubes, insertedId]}})
                 }
                 return true;
             }
@@ -81,6 +89,70 @@ const Mutation = {
             throw new ApolloError(`${e}`);
         }
     },
+    makePublic: async(parent: any, args: {id: ObjectId}, ctx:{req: Request, res: Response}): Promise<boolean> => {
+        try{
+            const db: Db = app.get("db")
+            const cubeCollection: Collection<Cube> = db.collection<Cube>("Cubes")
+            await cubeCollection.findOneAndUpdate({_id: new ObjectId(args.id)}, {$set:{public: true}})
+            return true
+        }catch(e){
+            throw new ApolloError(`${e}`);
+        }
+    },
+    deleteCube: async(parent: any, args: {id: ObjectId}, ctx: {req: Request, res: Response}): Promise<boolean> => {
+        try{
+            const db: Db = app.get("db");
+            const cubeCollection: Collection<Cube> = db.collection<Cube>("Cubes")
+            const userCollection: Collection<User> = db.collection<User>("Users")
+            const cube = await cubeCollection.findOne({_id: new ObjectId(args.id)})
+            if(cube){
+                await userCollection.updateMany({cubes: new ObjectId(args.id)}, {$pull: {cubes: new ObjectId(args.id)}})
+                await axios.post(`${process.env.IMG_API_URL}/delete/${cube.cardImg}`)
+                await cubeCollection.deleteOne(cube)
+                return true
+            }
+            return false
+        }catch(e){
+            throw new ApolloError(`${e}`);
+        }
+    },
+    changeCube: async(parent: any, args: {input: Cube}, ctx: {req: Request, res: Response}): Promise<boolean> => {
+        try{
+            const db: Db = app.get("db");
+            const cubeCollection: Collection<Cube> = db.collection<Cube>("Cubes")
+            await cubeCollection.findOneAndUpdate({_id: new ObjectId(args.input._id)}, {$set: {
+                creator: args.input.creator,
+                cubeName: args.input.cubeName,
+                cubeDimensions: args.input.cubeDimensions,
+                cubeModName: args.input.cubeModName,
+                cubeModel: args.input.cubeModel,
+                cubeBrand: args.input.cubeBrand,
+                cubeDesigner: args.input.cubeDesigner,
+                cardMainTitle: args.input.cardMainTitle,
+                cardText: args.input.cardText,
+            }})
+            return true
+        }catch(e){
+            throw new ApolloError(`${e}`);
+        }
+    },
+    cloneCube: async(parent: any, args: {input: {id: ObjectId, authToken: string}}, ctx: {req: Request, res: Response}): Promise<boolean> => {
+        try{
+            const db: Db = app.get("db");
+            const userCollection: Collection<User> = db.collection<User>("Users")
+            const user = await userCollection.findOne({authToken: args.input.authToken})
+            if(user){
+                if(!user.cubes.find((elem) => elem === new ObjectId(args.input.id))){
+                    await userCollection.updateOne(user, {$set: {cubes: [...user.cubes, new ObjectId(args.input.id)]}})
+                    return true
+                }
+                return false
+            }
+            return false
+        }catch(e){
+            throw new ApolloError(`${e}`);
+        }
+    }
 }
 
 export default Mutation;
