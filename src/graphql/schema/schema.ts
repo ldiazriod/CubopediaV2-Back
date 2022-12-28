@@ -13,9 +13,14 @@ const Schema = gql`
         cubes: [Cube]!
     }
 
+    type Creator{
+        creatorId: String!
+        username: String
+    }
+
     type Cube{
         _id: ID
-        creator: String!
+        creator: Creator!
         cubeName: String!
         cubeDimensions: String!
         cubeModName: String
@@ -55,6 +60,30 @@ const Schema = gql`
         cubeDimensions: String
         cubeName: String
         cardReviewPoints: Int
+        cubeType: Boolean
+    }
+    input CloneInfo {
+        id: ID!
+        authToken: String!
+    }
+    input CreatorInput {
+        creatorId: String!
+        username: String!
+    }
+    input UpdateCubeInput {
+        _id: ID
+        creator: CreatorInput!
+        cubeName: String!
+        cubeDimensions: String!
+        cubeModName: String
+        cubeModel: String
+        cubeBrand: String
+        cubeDesigner: String
+        cardMainTitle: String!
+        cardText: String!
+        cardReviewPoints: Int!
+        cardImg: String!
+        public: Boolean!
     }
     type Query{
         getAllCubeCards: [Cube!]!
@@ -71,6 +100,9 @@ const Schema = gql`
         addCubeCard(info: CubeInput!): Boolean!
         logOut(authToken: String!): Boolean!
         makePublic(id: ID!): Boolean!
+        deleteCube(id: ID!): Boolean!
+        changeCube(input: UpdateCubeInput!): Boolean!
+        cloneCube(input: CloneInfo!): Boolean!
     }
 `
 export default Schema;

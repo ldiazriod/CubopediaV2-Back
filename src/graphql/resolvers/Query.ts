@@ -1,8 +1,9 @@
 import {ApolloError} from "apollo-server-express";
 import { Request, Response } from "express";
 import {Db, Collection, WithId, ObjectId} from "mongodb"; 
-import {Cube, User} from "../../mongodb/mongoTypes"
+import {Cube, PublicCube, User} from "../../mongodb/mongoTypes"
 import {app} from "../../server"
+
 const Query = {
     getAllCubeCards: async(parents: any, args: {}, ctx: {req: Request, res: Response}): Promise<Cube[]> => {
         try{
@@ -20,7 +21,7 @@ const Query = {
             const userCollection: Collection<User> = db.collection<User>("Users")
             const user: WithId<User> | null = await userCollection.findOne({authToken: args.authToken});
             if(user){
-                return await cubeCollection.find({creator: (user._id).toString()}).toArray();
+                return await cubeCollection.find({_id: {$in: user.cubes}}).toArray()
             }
             return []
         }catch(e){
@@ -45,7 +46,21 @@ const Query = {
             throw new ApolloError(`${e}`);
         }
     },
-    getPublicCubes: async(parents: any, args: {page: number, search: {cardMainTitle: string | undefined, cubeDimensions: string | undefined, cubeName: string | undefined, cardReviewPoints: number | undefined} | undefined}, ctx: {req: Request, res: Response}): Promise<WithId<Cube>[] | null> => {
+    getPublicCubes: async(
+        parents: any, 
+        args: {
+            page: number, 
+            search: {
+                cardMainTitle: string | undefined, 
+                cubeDimensions: string | undefined, 
+                cubeName: string | undefined, 
+                cardReviewPoints: number | undefined, 
+                cubeType: boolean | undefined
+            } | undefined}, 
+            ctx: {
+                req: Request, 
+                res: Response
+            }): Promise<WithId<Cube>[] | null> => {
         try{
             const db: Db = app.get("db")
             const cubeCollection: Collection<Cube> = db.collection<Cube>("Cubes");
@@ -55,15 +70,18 @@ const Query = {
                     toFilter.cardMainTitle = {$regex: args.search.cardMainTitle}
                 }
                 if(args.search.cubeDimensions){
-                    toFilter.cubeDimensions = args.search.cubeDimensions
+                    toFilter.cubeDimensions = {$regex: args.search.cubeDimensions}
                 }
                 if(args.search. cubeName){
-                    toFilter.cubeName = args.search.cubeName
+                    toFilter.cubeName = {$regex: args.search.cubeName}
                 }
                 if(args.search.cardReviewPoints){
                     toFilter.cardReviewPoints = args.search.cardReviewPoints
                 }
-                return cubeCollection.find({...toFilter, public: true}).skip((args.page-1)*20).limit(20).toArray(); 
+                if(args.search.cubeType !== undefined && args.search.cubeType){
+                    return await cubeCollection.find({...toFilter, cubeModName: {$exists: args.search.cubeType, $ne: ""} , public: true}).skip((args.page-1)*20).limit(20).toArray();
+                }
+                return await cubeCollection.find({...toFilter, public: true}).skip((args.page-1)*20).limit(20).toArray(); 
             }
             return await cubeCollection.find({public: true}).skip((args.page-1)*20).limit(20).toArray(); 
         }catch(e){

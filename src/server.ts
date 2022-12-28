@@ -3,12 +3,14 @@ import {ApolloServerPluginLandingPageGraphQLPlayground} from "apollo-server-core
 import { MongoClient } from "mongodb";
 import express from "express"
 import cors from "cors"
+import * as dotenv from "dotenv";
 
 import mongoConnect from "./mongodb/mongoconnect";
 import Schema from "./graphql/schema/schema";
 import Mutation  from "./graphql/resolvers/Mutations";
 import Query from "./graphql/resolvers/Query";
 
+dotenv.config()
 const resolvers = {
     Query,
     Mutation
@@ -18,7 +20,7 @@ export const app = express();
 
 const run = async() => {
     try{
-        const client: MongoClient = await mongoConnect("mongodb+srv://luis:nebrija@backend.amsuu.mongodb.net/?retryWrites=true&w=majority")
+        const client: MongoClient = await mongoConnect(process.env.MONGO_TOKEN!)
         app.set("db", client.db("Cubopedia"))
     }catch(e){
         console.log(e);
