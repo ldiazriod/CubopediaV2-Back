@@ -1,4 +1,10 @@
 import {ObjectId} from "mongodb"
+import { Request, Response } from "express";
+
+export type Context = {
+    req: Request,
+    res: Response
+}
 
 export type User = {
     _id?: ObjectId;
@@ -25,9 +31,19 @@ export type Cube = {
     cubeDesigner: string | undefined;
     cardMainTitle: string;
     cardText: string;
-    cardReviewPoints: number;
+    cardReviewPoints: {
+        reviewMean: number,
+        reviews: ObjectId[]
+    };
     cardImg: string;
     public: boolean;
+}
+
+export type Review = {
+    _id?: ObjectId
+    userId: ObjectId
+    cubeId: ObjectId
+    points: number
 }
 
 export type InputCube = {
@@ -57,7 +73,38 @@ export type PublicCube = {
     cubeDesigner: string | undefined;
     cardMainTitle: string;
     cardText: string;
-    cardReviewPoints: number;
+    cardReviewPoints: {
+        reviewMean: number,
+        reviews: ObjectId[]
+    };
     cardImg: string;
     public: boolean;
 }
+
+export type ProfileCube = {
+    _id: ObjectId
+    cubeName: string
+    cubeDimensions: string
+    cubeModName: string
+    cubeModel: string
+    cubeBrand: string
+    cubeDesigner: string
+    cardMainTitle: string
+    cardText: string
+    cardReviewPoints: {
+        reviewMean: number,
+        reviews: ObjectId[]
+    };
+    cardImg: string
+}
+export type ProfileInfo = {
+    username: string
+    profileImg: string
+    numReviews: number
+    cardReviews: {
+        cardsTotalMean: number,
+        cardsTotalReviews: number
+    }
+    cubes: ProfileCube[]
+}
+
