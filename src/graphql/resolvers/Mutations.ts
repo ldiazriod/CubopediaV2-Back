@@ -127,11 +127,7 @@ const Mutation = {
             const db: Db = app.get("db");
             const cubeCollection: Collection<Cube> = db.collection<Cube>("Cubes")
             await cubeCollection.findOneAndUpdate({_id: new ObjectId(args.input._id)}, {$set: {
-                creator: args.input.creator,
                 cubeName: args.input.cubeName,
-                cubeDimensions: args.input.cubeDimensions,
-                cubeModName: args.input.cubeModName,
-                cubeModel: args.input.cubeModel,
                 cubeBrand: args.input.cubeBrand,
                 cubeDesigner: args.input.cubeDesigner,
                 cardMainTitle: args.input.cardMainTitle,
@@ -211,7 +207,7 @@ const Mutation = {
                         cubeId: new ObjectId(args.input.cubeId),
                         points: args.input.points
                     })
-                    const mean = (reviewed.reduce((sum, elem) => sum + elem.points, 0)+args.input.points) / (reviewed.length + 1);
+                    const mean = Math.round((reviewed.reduce((sum, elem) => sum + elem.points, 0)+args.input.points) / (reviewed.length + 1));
                     await cubeCollection.findOneAndUpdate({_id: new ObjectId(args.input.cubeId)}, {$push: {"cardReviewPoints.reviews": insertedId}, $set: {"cardReviewPoints.reviewMean": mean}})
                     return true
                 }

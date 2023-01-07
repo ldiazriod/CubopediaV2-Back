@@ -64,7 +64,7 @@ const Query = {
             if(args.search){
                 const toFilter = Object.create(args.search)
                 if(args.search.cardMainTitle){
-                    toFilter.cardMainTitle = {$regex: args.search.cardMainTitle}
+                    toFilter.cardMainTitle = {$regex: args.search.cardMainTitle, $options: 'i'}
                 }
                 if(args.search.cubeDimensions){
                     toFilter.cubeDimensions = {$regex: args.search.cubeDimensions}
@@ -73,10 +73,9 @@ const Query = {
                     toFilter.cubeName = {$regex: args.search.cubeName}
                 }
                 if(args.search.cubeType !== undefined && args.search.cubeType){
-                    return await cubeCollection.find({...toFilter, cubeModName: {$exists: args.search.cubeType, $ne: ""}, public: true, "cardReviewPoints.reviewMean": args.search.cardReviewPoints ? args.search.cardReviewPoints : 0}).skip((args.page-1)*20).limit(20).toArray();
+                    return await cubeCollection.find({...toFilter, cubeModName: {$exists: true, $ne: ""}, public: true, "cardReviewPoints.reviewMean": args.search.cardReviewPoints ? args.search.cardReviewPoints : 0}).skip((args.page-1)*20).limit(20).toArray();
                 }
-                console.log(args.search.cardReviewPoints ? args.search.cardReviewPoints : 0)
-                return await cubeCollection.find({...toFilter, "cardReviewPoints.reviewMean": args.search.cardReviewPoints ? args.search.cardReviewPoints : 0, public: true}).skip((args.page-1)*20).limit(20).toArray(); 
+                return await cubeCollection.find({...toFilter, "cardReviewPoints.reviewMean": args.search.cardReviewPoints ? args.search.cardReviewPoints : {$exists: true}, public: true}).skip((args.page-1)*20).limit(20).toArray(); 
             }
             return await cubeCollection.find({public: true}).skip((args.page-1)*20).limit(20).toArray(); 
         }catch(e){
