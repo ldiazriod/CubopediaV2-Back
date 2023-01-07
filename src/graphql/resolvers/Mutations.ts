@@ -207,7 +207,8 @@ const Mutation = {
                         cubeId: new ObjectId(args.input.cubeId),
                         points: args.input.points
                     })
-                    const mean = Math.round((reviewed.reduce((sum, elem) => sum + elem.points, 0)+args.input.points) / (reviewed.length + 1));
+                    const cubeReviews = await reviewCollection.find({cubeId: new ObjectId(args.input.cubeId)}).toArray()
+                    const mean = Math.round((cubeReviews.reduce((sum, elem) => sum + elem.points, 0)+args.input.points) / (cubeReviews.length+1));
                     await cubeCollection.findOneAndUpdate({_id: new ObjectId(args.input.cubeId)}, {$push: {"cardReviewPoints.reviews": insertedId}, $set: {"cardReviewPoints.reviewMean": mean}})
                     return true
                 }
