@@ -113,8 +113,8 @@ const Mutation = {
             if(cube){
                 await reviewCollection.deleteMany({cubeId: cube._id})
                 await userCollection.updateMany({cubes: new ObjectId(args.id)}, {$pull: {cubes: new ObjectId(args.id)}})
-                await axios.post(`${process.env.IMG_API_URL}/delete/${cube.cardImg}`)
                 await cubeCollection.deleteOne(cube)
+                await axios.post(`${process.env.IMG_API_URL}/delete/${cube.cardImg}`)
                 return true
             }
             return false
