@@ -34,7 +34,7 @@ const Schema = gql`
         cardText: String!
         cardReviewPoints: Reviews!
         cardImg: String!
-        public: Boolean!
+        publicCube: Boolean!
     }
 
     type ProfileCube {
@@ -69,6 +69,10 @@ const Schema = gql`
         reviewed: Boolean!
         reviewValue: Int
     }
+    type SignUpResponse {
+        authToken: String!
+        creator: String!
+    }
     input CubeInput{
         _id: ID
         creator: ID!
@@ -82,7 +86,7 @@ const Schema = gql`
         cardText: String!
         cardReviewPoints: Int!
         cardImg: String!
-        public: Boolean!
+        publicCube: Boolean!
     }
 
     input PublicSearch {
@@ -113,7 +117,7 @@ const Schema = gql`
         cardText: String!
         cardReviewPoints: Int!
         cardImg: String!
-        public: Boolean!
+        publicCube: Boolean!
     }
     input ProfileInput {
         authToken: String
@@ -137,19 +141,15 @@ const Schema = gql`
         authToken: String!
     }
     type Query{
-        getAllCubeCards: [Cube!]!
         getCubesByUser(authToken: String!): [Cube!]!
-        getCubeById(cubeId: ID!): Cube!
-        getUser(authToken: String!): User
         getPublicCubes(page: Int!, search: PublicSearch): [Cube!]!
-        getCreator(id: ID!): String
         getProfileInfo(input: ProfileInput!): ProfileInfo
         isUser(input: ProfileInput!): Boolean!
         getReview(input: GetReviewInput!): ReturnReview!
     }
     type Mutation{
         logIn(username: String, email: String, password: String!): LogInReturn
-        signUp(username: String!, email: String!, password: String!): String
+        signUp(username: String!, email: String!, password: String!, name: String, lastName: String): SignUpResponse
         addCubeCard(info: CubeInput!): Boolean!
         logOut(authToken: String!): Boolean!
         makePublic(id: ID!): Boolean!
