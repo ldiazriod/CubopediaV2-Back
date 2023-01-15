@@ -36,7 +36,7 @@ export type Cube = {
         reviews: ObjectId[]
     };
     cardImg: string;
-    public: boolean;
+    publicCube: boolean;
 }
 
 export type Review = {
@@ -59,7 +59,7 @@ export type InputCube = {
     cardText: string;
     cardReviewPoints: number;
     cardImg: string;
-    public: boolean;
+    publicCube: boolean;
 }
 
 export type PublicCube = {
@@ -78,17 +78,17 @@ export type PublicCube = {
         reviews: ObjectId[]
     };
     cardImg: string;
-    public: boolean;
+    publicCube: boolean;
 }
 
 export type ProfileCube = {
     _id: ObjectId
     cubeName: string
     cubeDimensions: string
-    cubeModName: string
-    cubeModel: string
-    cubeBrand: string
-    cubeDesigner: string
+    cubeModName: string | undefined
+    cubeModel: string | undefined
+    cubeBrand: string | undefined
+    cubeDesigner: string | undefined
     cardMainTitle: string
     cardText: string
     cardReviewPoints: {
