@@ -1,10 +1,10 @@
 import {ApolloError} from "apollo-server-express";
 import {Db, Collection, WithId, ObjectId} from "mongodb";
-import {User, Cube, InputCube, PublicCube, Context, Review} from "../../mongodb/mongoTypes"
+import {User, Cube, InputCube, Review} from "../../mongodb/mongoTypes"
 import {app} from "../../server"
 // @ts-ignore
 import { v4 as uuidv4 } from 'uuid';
-import axios from "axios";
+import s3DeleteImage from "../../aws/functions/s3DeleteImage";
 
 const Mutation = {
     logIn: async(
@@ -131,7 +131,7 @@ const Mutation = {
                 await reviewCollection.deleteMany({cubeId: cube._id})
                 await userCollection.updateMany({cubes: new ObjectId(args.id)}, {$pull: {cubes: new ObjectId(args.id)}})
                 await cubeCollection.deleteOne(cube)
-                await axios.post(`${process.env.IMG_API_URL}/delete/${cube.cardImg}`)
+                await s3DeleteImage(cube.cardImg)
                 return true
             }
             return false
@@ -195,8 +195,8 @@ const Mutation = {
                     {"cardReviewPoints.reviews": {$in: userReviews.map((elem) => elem._id)}}, 
                     {$pull: {"cardReviewPoints.reviews": userReviews.map((elem) => elem._id)}})
                 await reviewCollection.deleteMany({userId: user._id})
-                if(user.profileImg?.length !== 0){
-                    await axios.post(`${process.env.IMG_API_URL}/delete/${user.profileImg}`)
+                if(user.profileImg && (user.profileImg.length !== 0)){
+                    await s3DeleteImage(user.profileImg)
                 }
                 const userCubes = (await cubeCollection.find(
                     {"creator.creatorId": user._id.toString()}
