@@ -1,6 +1,6 @@
 import {ApolloError} from "apollo-server-express";
 import {Db, Collection, WithId, ObjectId} from "mongodb"; 
-import {Context, Cube, ProfileCube, ProfileInfo, PublicCube, Review, User} from "../../mongodb/mongoTypes"
+import {Cube, ProfileInfo, Review, User} from "../../mongodb/mongoTypes"
 import {app} from "../../server"
 
 const Query = {
@@ -127,7 +127,7 @@ const Query = {
         }catch(e){
             throw new ApolloError(`${e}`)
         }
-    }
+    },
 }
 
 export default Query;

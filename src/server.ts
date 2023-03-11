@@ -6,7 +6,7 @@ import cors from "cors"
 import * as dotenv from "dotenv";
 
 import mongoConnect from "./mongodb/mongoconnect";
-import Schema from "./graphql/schema/schema";
+import typeDefs from "./graphql/schema/schema";
 import Mutation  from "./graphql/resolvers/Mutations";
 import Query from "./graphql/resolvers/Query";
 
@@ -28,16 +28,11 @@ const run = async() => {
 }
 
 const server: ApolloServer<ExpressContext> = new ApolloServer({
-    typeDefs: Schema,
-    resolvers: resolvers,
+    typeDefs,
+    resolvers,
     plugins: [
         ApolloServerPluginLandingPageGraphQLPlayground(),
     ],
-    context: (ctx) => {
-        return {
-            ctx,
-        }
-    },
     introspection: true,
     cache: "bounded",
     persistedQueries: false,
