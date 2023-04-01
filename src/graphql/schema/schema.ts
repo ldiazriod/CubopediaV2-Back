@@ -11,6 +11,7 @@ const Schema = gql`
         email: String!
         password: String!
         cubes: [Cube]!
+        verified: Boolean!
     }
 
     type Creator{
@@ -159,6 +160,7 @@ const Schema = gql`
         changeProfileImg(input: ChangeImage!): Boolean!
         deleteUser(input: DeleteUserInput!): Boolean!
         addReview(input: ReviewInput!): Boolean!
+        sendMail(email: String!): Boolean!
     }
 `
 export default Schema;

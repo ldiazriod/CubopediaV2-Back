@@ -127,7 +127,7 @@ const Query = {
         }catch(e){
             throw new ApolloError(`${e}`)
         }
-    },
+    }
 }
 
 export default Query;
