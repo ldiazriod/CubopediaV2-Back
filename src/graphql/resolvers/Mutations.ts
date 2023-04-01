@@ -1,7 +1,8 @@
 import {ApolloError} from "apollo-server-express";
 import {Db, Collection, WithId, ObjectId} from "mongodb";
-import {User, Cube, InputCube, Review} from "../../mongodb/mongoTypes"
+import {User, Cube, InputCube, Review, Token} from "../../mongodb/mongoTypes"
 import {app} from "../../server"
+import crypto from "crypto"
 // @ts-ignore
 import { v4 as uuidv4 } from 'uuid';
 import s3DeleteImage from "../../aws/functions/s3DeleteImage";
@@ -58,7 +59,8 @@ const Mutation = {
                     ...args,
                     cubes: [], 
                     authToken: token,
-                    profileImg: ""
+                    profileImg: "",
+                    verified: false
                 })
                 return {authToken: token, creator: insertedId.toString()}
             }
@@ -246,8 +248,30 @@ const Mutation = {
         }catch(e){
             throw new ApolloError(`${e}`);
         }
-    }
+    },
+    sendMail: async(parents: any, args: {email: string}): Promise<boolean> => {
+        try{
+            const db: Db = app.get("db")
+            const userCollection = db.collection<{_id: ObjectId, email: string, name?: string}>("Users")
+            const tokenCollection = db.collection<Token>("Tokens")
+            const user = await userCollection.findOne({email: args.email})
+            if(user){
+                const token = crypto.randomBytes(32).toString("hex")
+                await tokenCollection.insertOne({userId: user._id, token: token})
+                const message = `${process.env.EMAIL_VERIFY_API}/user/verify/${user._id.toString()}/token`
+                sender(user.email, message, user.name)
+                return true
+            }
+            return false
+        }catch(e){
+            throw new ApolloError(`${e}`)
+        }
+    },
 }
 
 export default Mutation;
+
+function sender(arg0: string, message: string, name: string | undefined) {
+    throw new Error("Function not implemented.");
+}
 

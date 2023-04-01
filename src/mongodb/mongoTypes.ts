@@ -15,7 +15,8 @@ export type User = {
     username: string;
     email: string;
     password: string;
-    cubes: ObjectId[]
+    cubes: ObjectId[];
+    verified: boolean;
 }
 export type Cube = {
     _id?: ObjectId;
@@ -108,3 +109,8 @@ export type ProfileInfo = {
     cubes: ProfileCube[]
 }
 
+export type Token = {
+    _id?: ObjectId,
+    userId: ObjectId,
+    token: string
+}
