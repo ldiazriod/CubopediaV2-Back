@@ -6,6 +6,7 @@ import crypto from "crypto"
 // @ts-ignore
 import { v4 as uuidv4 } from 'uuid';
 import s3DeleteImage from "../../aws/functions/s3DeleteImage";
+import { sender } from "../../email/sender";
 
 const Mutation = {
     logIn: async(
@@ -43,7 +44,7 @@ const Mutation = {
     signUp: async(
             parents: any, 
             args: {username: string, email: string, password: string, name?: string, lastName?: string}
-        ): Promise<{authToken: string, creator: string} | undefined> => {
+        ): Promise<{authToken: string, creator: string, verified: boolean} | undefined> => {
         try{
             const db: Db = app.get("db");
             const userCollection: Collection<User> = db.collection<User>("Users")
@@ -54,6 +55,8 @@ const Mutation = {
                 ]
             })
             if(!user){
+                const tokenCollection = db.collection<Token>("Tokens")
+                const tokenVerify = crypto.randomBytes(32).toString("hex")
                 const token = uuidv4()
                 const {insertedId} = await userCollection.insertOne({
                     ...args,
@@ -62,7 +65,10 @@ const Mutation = {
                     profileImg: "",
                     verified: false
                 })
-                return {authToken: token, creator: insertedId.toString()}
+                await tokenCollection.insertOne({userId: insertedId, token: tokenVerify})
+                const message = `${process.env.EMAIL_VERIFY_API}/user/verify/${insertedId.toString()}/${tokenVerify}`
+                sender(args.email, message, args.name)
+                return {authToken: token, creator: insertedId.toString(), verified: false}
             }
             return undefined;
         }catch(e){
@@ -249,17 +255,21 @@ const Mutation = {
             throw new ApolloError(`${e}`);
         }
     },
-    sendMail: async(parents: any, args: {email: string}): Promise<boolean> => {
+    sendMail: async(parents: any, args: {authToken: string}): Promise<boolean> => {
         try{
             const db: Db = app.get("db")
             const userCollection = db.collection<{_id: ObjectId, email: string, name?: string}>("Users")
             const tokenCollection = db.collection<Token>("Tokens")
-            const user = await userCollection.findOne({email: args.email})
+            const user = await userCollection.findOne({authToken: args.authToken})
             if(user){
-                const token = crypto.randomBytes(32).toString("hex")
-                await tokenCollection.insertOne({userId: user._id, token: token})
-                const message = `${process.env.EMAIL_VERIFY_API}/user/verify/${user._id.toString()}/token`
-                sender(user.email, message, user.name)
+                const allreadySended = await tokenCollection.findOne({userId: user._id})
+                if(!allreadySended){
+                    const token = crypto.randomBytes(32).toString("hex")
+                    await tokenCollection.insertOne({userId: user._id, token: token})
+                    const message = `${process.env.EMAIL_VERIFY_API}/user/verify/${user._id.toString()}/${token}`
+                    sender(user.email, message, user.name)
+                    return true
+                }
                 return true
             }
             return false
@@ -270,8 +280,4 @@ const Mutation = {
 }
 
 export default Mutation;
-
-function sender(arg0: string, message: string, name: string | undefined) {
-    throw new Error("Function not implemented.");
-}
 

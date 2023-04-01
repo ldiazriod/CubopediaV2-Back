@@ -11,7 +11,7 @@ const Schema = gql`
         email: String!
         password: String!
         cubes: [Cube]!
-        verified: Boolean!
+        verified: Boolean
     }
 
     type Creator{
@@ -73,6 +73,7 @@ const Schema = gql`
     type SignUpResponse {
         authToken: String!
         creator: String!
+        verified: Boolean!
     }
     input CubeInput{
         _id: ID
@@ -146,7 +147,9 @@ const Schema = gql`
         getPublicCubes(page: Int!, search: PublicSearch): [Cube!]!
         getProfileInfo(input: ProfileInput!): ProfileInfo
         isUser(input: ProfileInput!): Boolean!
+        isVerified(authToken: String!): Boolean!
         getReview(input: GetReviewInput!): ReturnReview!
+        getUser(authToken: String!): User
     }
     type Mutation{
         logIn(username: String, email: String, password: String!): LogInReturn
@@ -160,7 +163,7 @@ const Schema = gql`
         changeProfileImg(input: ChangeImage!): Boolean!
         deleteUser(input: DeleteUserInput!): Boolean!
         addReview(input: ReviewInput!): Boolean!
-        sendMail(email: String!): Boolean!
+        sendMail(authToken: String!): Boolean!
     }
 `
 export default Schema;

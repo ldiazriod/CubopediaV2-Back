@@ -105,6 +105,19 @@ const Query = {
             throw new ApolloError(`${e}`)
         }
     },
+    isVerified: async(parents: any, args: {authToken: string}): Promise<boolean> => {
+        try{
+            const db: Db = app.get("db")
+            const userCollection = db.collection<{verified: boolean}>("Users")
+            const user = await userCollection.findOne({authToken: args.authToken})
+            if(user){
+                return user.verified ? user.verified : false
+            }
+            return false
+        }catch(e){
+            throw new ApolloError(`${e}`)
+        }
+    },
     getReview: async(parents: any, args: {input: {authToken: string, cubeId: string}}): Promise<{reviewed: boolean, reviewValue: number}> => {
         try{
             const db: Db = app.get("db")
@@ -124,6 +137,16 @@ const Query = {
                 reviewed: false,
                 reviewValue: 0
             }
+        }catch(e){
+            throw new ApolloError(`${e}`)
+        }
+    },
+    getUser: async(parents: any, args: {authToken: string}): Promise<User | null> => {
+        try{
+            const db: Db = app.get("db")
+            const userCollection = db.collection<User>("Users")
+            const user = await userCollection.findOne({authToken: args.authToken})
+            return user
         }catch(e){
             throw new ApolloError(`${e}`)
         }
